@@ -1,0 +1,118 @@
+{
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<esc><wait>",
+        "install ",
+	    "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+	    "debian-installer=en_US auto locale=en_US kbd-chooser/method=us <wait>",
+        "netcfg/get_hostname={{ .Name }} ",
+	    "netcfg/get_domain=vagrantup.com ",
+	    "fb=false debconf/frontend=noninteractive ",
+	    "console-setup/ask_detect=false <wait>",
+  	    "console-keymaps-at/keymap=us ",
+	    "keyboard-configuration/xkb-keymap=us <wait>",
+        "<enter><wait10><wait10><wait10>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_os_type": "Debian_64",
+      "http_directory": "http",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/shutdown -h 0",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_username": "vagrant",
+      "ssh_wait_timeout": "10000s",
+      "vboxmanage": [
+	["modifyvm", "{{.Name}}", "--nic2", "intnet"],
+	["modifyvm", "{{.Name}}", "--macaddress2", "080027f34a5d"]
+      ]
+    },
+    {
+      "type": "vmware-iso",
+	  "boot_command": [
+	  "<esc><esc><esc><wait>",
+	  "/install/vmlinuz noapic ",
+	  "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+	  "debian-installer=en_US auto locale=en_US kbd-chooser/method=us <wait>",
+	  "netcfg/get_hostname={{ .Name }} ",
+	  "netcfg/get_domain=vagrantup.com ",
+	  "fb=false debconf/frontend=noninteractive ",
+	  "console-setup/ask_detect=false <wait>", 
+	  "console-keymaps-at/keymap=us ",
+	  "keyboard-configuration/xkb-keymap=us <wait>",
+	  "initrd=/install/initrd.gz -- <enter>"
+	],
+      "boot_wait": "10s",
+      "guest_os_type": "debian7-32",
+      "http_directory": "http",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_username": "vagrant",
+      "ssh_wait_timeout": "10000s",
+      "tools_upload_flavor": "linux",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/shutdown -h 0"
+  }
+  ],
+  "post-processors": [
+    {
+      "output": "builds/{{user `box_basename`}}.{{.Provider}}.box",
+      "type": "vagrant"
+    }
+  ],
+  "provisioners": [
+    {
+      "destination": "/tmp/bento-metadata.json",
+      "source": "{{user `metadata`}}",
+      "type": "file"
+    },
+    {
+      "environment_vars": [
+        "HOME_DIR=/home/vagrant",
+        "http_proxy={{user `http_proxy`}}",
+        "https_proxy={{user `https_proxy`}}",
+        "no_proxy={{user `no_proxy`}}"
+      ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+      "scripts": [
+        "scripts/common/metadata.sh",
+        "scripts/debian/update.sh",
+        "scripts/common/sshd.sh",
+        "scripts/debian/networking.sh",
+        "scripts/debian/sudoers.sh",
+        "scripts/common/vagrant.sh",
+        "scripts/common/vmtools.sh",
+        "scripts/debian/cleanup.sh",
+        "scripts/common/minimize.sh"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "box_basename": "__unset_box_basename__",
+    "build_timestamp": "{{isotime \"20060102150405\"}}",
+    "git_revision": "__unknown_git_revision__",
+    "headless": "",
+    "http_proxy": "{{env `http_proxy`}}",
+    "https_proxy": "{{env `https_proxy`}}",
+    "iso_checksum": "593f0e5b5db5e65102b12f047a7383740c5d7d7a",
+    "iso_checksum_type": "sha1",
+    "iso_name": "kali-linux-1.1.0a-i386.iso",
+    "metadata": "floppy/dummy_metadata.json",
+    "mirror": "http://cdimage.kali.org/",
+    "mirror_directory": "kali-1.1.0a/",
+    "name": "kali-1.1.0",
+    "no_proxy": "{{env `no_proxy`}}",
+    "preseed_path": "kali-1.1.0/preseed.cfg",
+    "template": "kali-1.1.0-amd64",
+    "version": "2.1.TIMESTAMP"
+  }
+}
