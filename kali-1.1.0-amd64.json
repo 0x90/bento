@@ -1,4 +1,22 @@
 {
+  "variables": {
+    "box_basename": "kali-1.1.0-amd64",
+    "build_timestamp": "{{isotime \"20060102150405\"}}",
+    "headless": "",
+    "http_proxy": "{{env `http_proxy`}}",
+    "https_proxy": "{{env `https_proxy`}}",
+    "iso_checksum": "2b8d2db20e2709c5e9e0f9f9bbd8606c9b9e729f",
+    "iso_checksum_type": "sha1",
+    "iso_name": "kali-linux-1.1.0a-amd64.iso",
+    "metadata": "floppy/dummy_metadata.json",
+    "mirror": "http://cdimage.kali.org",
+    "mirror_directory": "kali-1.1.0a",
+    "name": "kali-1.1.0",
+    "no_proxy": "{{env `no_proxy`}}",
+    "preseed_path": "kali-1.1.0/preseed.cfg",
+    "template": "kali-1.1.0-amd64",
+    "version": "2.1.TIMESTAMP"
+  },
   "builders": [
     {
       "type": "virtualbox-iso",
@@ -110,12 +128,6 @@
       "vm_name": "{{ user `template` }}"
     }
   ],
-  "post-processors": [
-    {
-      "output": "builds/{{user `box_basename`}}.{{.Provider}}.box",
-      "type": "vagrant"
-    }
-  ],
   "provisioners": [
     {
       "destination": "/tmp/bento-metadata.json",
@@ -147,23 +159,44 @@
       "type": "shell"
     }
   ],
-  "variables": {
-    "box_basename": "__unset_box_basename__",
-    "build_timestamp": "{{isotime \"20060102150405\"}}",
-    "git_revision": "__unknown_git_revision__",
-    "headless": "",
-    "http_proxy": "{{env `http_proxy`}}",
-    "https_proxy": "{{env `https_proxy`}}",
-    "iso_checksum": "2b8d2db20e2709c5e9e0f9f9bbd8606c9b9e729f",
-    "iso_checksum_type": "sha1",
-    "iso_name": "kali-linux-1.1.0a-amd64.iso",
-    "metadata": "floppy/dummy_metadata.json",
-    "mirror": "http://127.0.0.1:8000",
-    "mirror_directory": "kali-1.1.0a",
-    "name": "kali-1.1.0",
-    "no_proxy": "{{env `no_proxy`}}",
-    "preseed_path": "kali-1.1.0/preseed.cfg",
-    "template": "kali-1.1.0-amd64",
-    "version": "2.1.TIMESTAMP"
+  "post-processors": [
+    {
+      "output": "builds/{{user `box_basename`}}.{{.Provider}}.box",
+      "type": "vagrant"
+    },
+    {
+        "type": "atlas",
+        "artifact": "090h/kali64",
+        "artifact_type": "vagrant.box",
+        "only": ["vmware-iso"],
+        "metadata": {
+            "provider": "vmware",
+            "version": "0.1.0"
+        }
+    },
+    {
+        "type": "atlas",
+        "only": ["virtualbox-iso"],
+        "artifact": "090h/kali64",
+        "artifact_type": "vagrant.box",
+        "metadata": {
+            "provider": "virtualbox",
+            "version": "0.1.0"
+        }
+    },
+    {
+        "type": "atlas",
+        "only": ["parallels-iso"],
+        "artifact": "090h/kali64",
+        "artifact_type": "vagrant.box",
+        "metadata": {
+            "provider": "parallels",
+            "version": "0.1.0"
+        }
+    }
+
+  ],
+  "push": {
+    "name": "090h/kali64"
   }
 }
